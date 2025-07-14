@@ -1,0 +1,546 @@
+{
+  "synonym_library": {
+    "player_id": [
+      "player_id",
+      "wyId",
+      "id",
+      "Player ID"
+    ],
+    "full_name": [
+      "full_name",
+      "Player",
+      "player_name",
+      "Name"
+    ],
+    "short_name": [
+      "short_name",
+      "shortName",
+      "Known As"
+    ],
+    "nationality": [
+      "nationality",
+      "Nation",
+      "country"
+    ],
+    "birth_date": [
+      "birth_date",
+      "DOB",
+      "Born",
+      "Date of Birth"
+    ],
+    "age": [
+      "age",
+      "Age"
+    ],
+    "height_cm": [
+      "height_cm",
+      "Height",
+      "height"
+    ],
+    "weight_kg": [
+      "weight_kg",
+      "Weight",
+      "weight"
+    ],
+    "primary_position": [
+      "primary_position",
+      "Pos",
+      "Position",
+      "Main Position",
+      "position"
+    ],
+    "secondary_position": [
+      "secondary_position",
+      "secondary_pos",
+      "Alt Position"
+    ],
+    "preferred_foot": [
+      "preferred_foot",
+      "Foot",
+      "Preferred Foot"
+    ],
+    "current_club_id": [
+      "current_club_id",
+      "club_id",
+      "team_id"
+    ],
+    "current_club_name": [
+      "current_club_name",
+      "Club",
+      "Team",
+      "Current Club"
+    ],
+    "current_league": [
+      "current_league",
+      "League",
+      "Comp",
+      "Competition"
+    ],
+    "contract_expires_on": [
+      "contract_expires_on",
+      "Contract End",
+      "Contract Expiry",
+      "Expires"
+    ],
+    "market_value_eur": [
+      "market_value_eur",
+      "Market Value",
+      "Value (EUR)",
+      "Price"
+    ],
+    "wage_eur_weekly": [
+      "wage_eur_weekly",
+      "Wage",
+      "Weekly Wage",
+      "Salary"
+    ],
+    "release_clause_eur": [
+      "release_clause_eur",
+      "Release Clause",
+      "Buyout Clause"
+    ],
+    "max_speed_kmh": [
+      "max_speed_kmh",
+      "Max Speed",
+      "Top Speed"
+    ],
+    "total_distance_km_p90": [
+      "total_distance_km_p90",
+      "Distance p90",
+      "Distance Covered"
+    ],
+    "sprint_distance_m_p90": [
+      "sprint_distance_m_p90",
+      "Sprint Distance",
+      "Sprints p90"
+    ],
+    "high_intensity_runs_p90": [
+      "high_intensity_runs_p90",
+      "High Intensity Runs",
+      "HIR p90"
+    ],
+    "minutes_played": [
+      "minutes_played",
+      "Min",
+      "Mins",
+      "Minutes"
+    ],
+    "matches_played": [
+      "matches_played",
+      "MP",
+      "Matches",
+      "Games Played",
+      "Apps"
+    ],
+    "goals": [
+      "goals",
+      "Gls",
+      "Goals Scored"
+    ],
+    "goals_p90": [
+      "goals_p90",
+      "Gls/90",
+      "Goals per 90"
+    ],
+    "assists": [
+      "assists",
+      "Ast"
+    ],
+    "assists_p90": [
+      "assists_p90",
+      "Ast/90",
+      "Assists per 90"
+    ],
+    "goals_plus_assists_p90": [
+      "goals_plus_assists_p90",
+      "G+A/90",
+      "G+A p90",
+      "G+A"
+    ],
+    "non_penalty_goals": [
+      "non_penalty_goals",
+      "npg",
+      "Non-Penalty Goals",
+      "G-PK"
+    ],
+    "non_penalty_goals_p90": [
+      "non_penalty_goals_p90",
+      "npg_p90",
+      "npg/90",
+      "Non-Penalty Goals per 90"
+    ],
+    "penalty_goals": [
+      "penalty_goals",
+      "PK",
+      "Penalty Kicks Made"
+    ],
+    "penalty_attempts": [
+      "penalty_attempts",
+      "PKatt",
+      "Penalty Kicks Attempted"
+    ],
+    "shots": [
+      "shots",
+      "Sh",
+      "Shots Total"
+    ],
+    "shots_p90": [
+      "shots_p90",
+      "Sh/90",
+      "Shots per 90"
+    ],
+    "shots_on_target": [
+      "shots_on_target",
+      "SoT"
+    ],
+    "shots_on_target_pct": [
+      "shots_on_target_pct",
+      "SoT%",
+      "Shot Accuracy %",
+      "shots_on_target_percentage"
+    ],
+    "tackles": [
+      "tackles",
+      "Tkl",
+      "Tackles Attempted"
+    ],
+    "tackles_p90": [
+      "tackles_p90",
+      "Tkl/90",
+      "Tackles per 90"
+    ],
+    "interceptions": [
+      "interceptions",
+      "Int",
+      "Interceptions Made"
+    ],
+    "interceptions_p90": [
+      "interceptions_p90",
+      "Int/90"
+    ],
+    "clearances": [
+      "clearances",
+      "Clr",
+      "Clearances Made"
+    ],
+    "clearances_p90": [
+      "clearances_p90",
+      "Clr/90"
+    ],
+    "aerial_duels_won": [
+      "aerial_duels_won",
+      "Aerials Won",
+      "Aerial Wins"
+    ],
+    "aerial_duels_won_p90": [
+      "aerial_duels_won_p90",
+      "Aerials Won p90",
+      "Aerial Wins p90"
+    ],
+    "aerial_duels_won_pct": [
+      "aerial_duels_won_pct",
+      "Aerial Win %",
+      "aerials won %"
+    ],
+    "fouls_committed_p90": [
+      "fouls_committed_p90",
+      "Fls",
+      "Fouls Committed p90"
+    ],
+    "fouls_won_p90": [
+      "fouls_won_p90",
+      "Fld",
+      "Fouls Drawn p90"
+    ],
+    "yellow_cards": [
+      "yellow_cards",
+      "CrdY",
+      "Yellow Cards"
+    ],
+    "red_cards": [
+      "red_cards",
+      "CrdR",
+      "Red Cards"
+    ],
+    "pass_completion_pct": [
+      "pass_completion_pct",
+      "Pass Acc %",
+      "PAcc",
+      "Cmp%"
+    ],
+    "long_pass_completion_pct": [
+      "long_pass_completion_pct",
+      "Long Pass Acc %",
+      "Long Cmp%"
+    ],
+    "medium_pass_completion_pct": [
+      "medium_pass_completion_pct",
+      "Med Pass Acc %",
+      "Med Cmp%"
+    ],
+    "short_pass_completion_pct": [
+      "short_pass_completion_pct",
+      "Short Pass Acc %",
+      "Short Cmp%"
+    ],
+    "key_passes_p90": [
+      "key_passes_p90",
+      "KP/90",
+      "Key Passes per 90"
+    ],
+    "passes_into_final_third_p90": [
+      "passes_into_final_third_p90",
+      "PPA",
+      "Passes into Att 3rd"
+    ],
+    "passes_into_penalty_area_p90": [
+      "passes_into_penalty_area_p90",
+      "CrsPA",
+      "Passes into Pen Area p90"
+    ],
+    "crosses_p90": [
+      "crosses_p90",
+      "Crs/90",
+      "Crosses per 90"
+    ],
+    "cross_completion_pct": [
+      "cross_completion_pct",
+      "Cross Acc %",
+      "Crossing Accuracy"
+    ],
+    "touches_p90": [
+      "touches_p90",
+      "Touches per 90",
+      "Touches"
+    ],
+    "touches_att_third_p90": [
+      "touches_att_third_p90",
+      "Touches (Att 3rd)",
+      "Att 3rd Touches"
+    ],
+    "touches_mid_third_p90": [
+      "touches_mid_third_p90",
+      "Touches (Mid 3rd)",
+      "Mid 3rd Touches"
+    ],
+    "touches_def_third_p90": [
+      "touches_def_third_p90",
+      "Touches (Def 3rd)",
+      "Def 3rd Touches"
+    ],
+    "touches_att_pen_area_p90": [
+      "touches_att_pen_area_p90",
+      "Touches (Att Pen)",
+      "Box Touches"
+    ],
+    "sca_p90": [
+      "sca_p90",
+      "SCA/90",
+      "Shot Creating Actions p90",
+      "Shot Actions"
+    ],
+    "gca_p90": [
+      "gca_p90",
+      "GCA/90",
+      "Goal Creating Actions p90"
+    ],
+    "turnovers_p90": [
+      "turnovers_p90",
+      "Turnovers",
+      "Ball Losses"
+    ],
+    "miscontrols_p90": [
+      "miscontrols_p90",
+      "Miscontrols p90"
+    ],
+    "dispossessed_p90": [
+      "dispossessed_p90",
+      "Dispossessed p90",
+      "Times Tackled"
+    ],
+    "progressive_passes_p90": [
+      "progressive_passes_p90",
+      "ProgPass p90",
+      "Progressive Passes per 90",
+      "progressive passes"
+    ],
+    "progressive_carries_p90": [
+      "progressive_carries_p90",
+      "ProgCarry p90",
+      "Progressive Carries per 90"
+    ],
+    "progressive_passes_received_p90": [
+      "progressive_passes_received_p90",
+      "ProgRec p90",
+      "Progressive Passes Rec"
+    ],
+    "progressive_distance_passes_p90": [
+      "progressive_distance_passes_p90",
+      "ProgDist Pass",
+      "Passing Progressive Distance"
+    ],
+    "progressive_distance_carries_p90": [
+      "progressive_distance_carries_p90",
+      "ProgDist Carry",
+      "Carrying Progressive Distance"
+    ],
+    "xg_p90": [
+      "xg_p90",
+      "xG/90",
+      "Expected Goals p90"
+    ],
+    "npxg_p90": [
+      "npxg_p90",
+      "npxG/90",
+      "Non-Penalty xG p90",
+      "Open Play xG p90",
+      "non-penalty xg",
+      "xg"
+    ],
+    "xag_p90": [
+      "xag_p90",
+      "xA/90",
+      "xAG/90",
+      "Expected Assists p90",
+      "expected assists",
+      "xa"
+    ],
+    "npxg_plus_xag_p90": [
+      "npxg_plus_xag_p90",
+      "npxG+xA/90",
+      "npxG+xAG p90"
+    ],
+    "xg_per_shot": [
+      "xg_per_shot",
+      "xG/Sh",
+      "Avg Shot Quality"
+    ],
+    "goals_minus_xg": [
+      "goals_minus_xg",
+      "G-xG",
+      "Finishing Overperformance"
+    ],
+    "np_goals_minus_npxg": [
+      "np_goals_minus_npxg",
+      "np:G-xG",
+      "Non-Penalty Finishing Overperformance"
+    ],
+    "p_adj_tackles_p90": [
+      "p_adj_tackles_p90",
+      "PAdj Tackles",
+      "Poss Adj Tackles"
+    ],
+    "p_adj_interceptions_p90": [
+      "p_adj_interceptions_p90",
+      "PAdj Interceptions",
+      "Poss Adj Int"
+    ],
+    "tackles_won_p90": [
+      "tackles_won_p90",
+      "TklW",
+      "Tackles Won per 90"
+    ],
+    "tackles_vs_dribbles_pct": [
+      "tackles_vs_dribbles_pct",
+      "Tkl/Dribbled Past %",
+      "Dribbler Tackle %"
+    ],
+    "dribbled_past_p90": [
+      "dribbled_past_p90",
+      "Dribbled Past p90",
+      "Times Dribbled Past"
+    ],
+    "blocks_p90": [
+      "blocks_p90",
+      "Blocks per 90",
+      "Blocks"
+    ],
+    "blocked_shots_p90": [
+      "blocked_shots_p90",
+      "Shots Blocked",
+      "Blocked Shots p90"
+    ],
+    "errors_leading_to_shot_p90": [
+      "errors_leading_to_shot_p90",
+      "Err p90",
+      "Errors to Shot"
+    ],
+    "pressures_p90": [
+      "pressures_p90",
+      "Pressures p90",
+      "pressures",
+      "work rate",
+      "defensive intensity"
+    ],
+    "pressure_regains_p90": [
+      "pressure_regains_p90",
+      "Pressure Regains p90",
+      "counter-pressing success"
+    ],
+    "pressure_regain_pct": [
+      "pressure_regain_pct",
+      "Pressure Regain %",
+      "Successful Pressure %"
+    ],
+    "pressures_def_third_p90": [
+      "pressures_def_third_p90",
+      "Pressures (Def 3rd)",
+      "Def 3rd Pressures"
+    ],
+    "pressures_mid_third_p90": [
+      "pressures_mid_third_p90",
+      "Pressures (Mid 3rd)",
+      "Mid 3rd Pressures"
+    ],
+    "pressures_att_third_p90": [
+      "pressures_att_third_p90",
+      "Pressures (Att 3rd)",
+      "Att 3rd Pressures"
+    ],
+    "ppda": [
+      "ppda",
+      "Passes Per Defensive Action",
+      "PPDA"
+    ],
+    "gk_save_pct": [
+      "gk_save_pct",
+      "Save %",
+      "Save Percentage"
+    ],
+    "gk_clean_sheet_pct": [
+      "gk_clean_sheet_pct",
+      "CS %",
+      "Clean Sheet Percentage"
+    ],
+    "gk_psxg_p90": [
+      "gk_psxg_p90",
+      "PSxG/90",
+      "Post-Shot xG p90"
+    ],
+    "gk_psxg_plus_minus_p90": [
+      "gk_psxg_plus_minus_p90",
+      "PSxG+/-",
+      "Goals Saved Above Average"
+    ],
+    "gk_crosses_stopped_pct": [
+      "gk_crosses_stopped_pct",
+      "Stp%",
+      "Cross Stop %"
+    ],
+    "gk_def_actions_outside_pen_area_p90": [
+      "gk_def_actions_outside_pen_area_p90",
+      "OPA/90",
+      "Sweeper Actions p90"
+    ],
+    "gk_avg_def_action_distance": [
+      "gk_avg_def_action_distance",
+      "Avg Action Distance",
+      "Sweeper Distance"
+    ],
+    "gk_penalty_kicks_saved": [
+      "gk_penalty_kicks_saved",
+      "PKs Saved",
+      "Penalties Saved"
+    ]
+  }
+}

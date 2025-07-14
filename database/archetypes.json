@@ -1,0 +1,165 @@
+{
+  "Ball-Playing Defender": {
+    "description": "A central defender who excels at initiating attacks from deep through precise passing. They are comfortable on the ball under pressure and capable of breaking opposition lines.",
+    "key_metrics": {
+      "progressive_passes_p90": 0.40,
+      "long_pass_completion_pct": 0.25,
+      "passes_into_final_third_p90": 0.20,
+      "p_adj_tackles_p90": 0.15
+    }
+  },
+  "Stopper": {
+    "description": "A traditional, defense-first central defender focused on aggressive challenges, winning aerial duels, and clearing danger. Their primary value is in their physical and defensive dominance.",
+    "key_metrics": {
+      "aerial_duels_won_pct": 0.35,
+      "tackles_won_p90": 0.30,
+      "clearances_p90": 0.20,
+      "blocks_p90": 0.15
+    }
+  },
+  "Overlapping Full-Back": {
+    "description": "A wide defender who provides attacking width by making runs down the flank. They are a primary source of crosses and look to get into advanced positions to support the attack.",
+    "key_metrics": {
+      "progressive_carries_p90": 0.35,
+      "crosses_p90": 0.30,
+      "touches_att_third_p90": 0.25,
+      "tackles_p90": 0.10
+    }
+  },
+  "Inverted Full-Back": {
+    "description": "A wide defender who moves into central midfield when their team is in possession. They contribute to build-up play, control the tempo, and provide defensive stability in the center.",
+    "key_metrics": {
+      "touches_mid_third_p90": 0.35,
+      "progressive_passes_p90": 0.30,
+      "p_adj_interceptions_p90": 0.20,
+      "pass_completion_pct": 0.15
+    }
+  },
+  "Anchor Man / Defensive Midfielder": {
+    "description": "A midfielder who sits in front of the defense, focused on breaking up opposition attacks and protecting the back line. Their role is primarily destructive and positional.",
+    "key_metrics": {
+      "p_adj_interceptions_p90": 0.40,
+      "p_adj_tackles_p90": 0.30,
+      "blocks_p90": 0.15,
+      "aerial_duels_won_p90": 0.15
+    }
+  },
+  "Regista / Deep-Lying Playmaker": {
+    "description": "A creative hub who dictates the tempo of the game from a deep midfield position. They orchestrate attacks with a wide range of passing, often without directly assisting the final shot.",
+    "key_metrics": {
+      "progressive_passes_p90": 0.40,
+      "passes_into_final_third_p90": 0.30,
+      "pass_completion_pct": 0.20,
+      "sca_p90": 0.10
+    }
+  },
+  "Box-to-Box Midfielder": {
+    "description": "An all-action midfielder who contributes significantly in both defensive and attacking phases of play. Characterized by high work rate, covering large distances, and balanced stats.",
+    "key_metrics": {
+      "total_distance_km_p90": 0.30,
+      "progressive_carries_p90": 0.25,
+      "tackles_plus_interceptions_p90": 0.25,
+      "touches_att_pen_area_p90": 0.20
+    }
+  },
+  "Mezzala / Attacking 8": {
+    "description": "A central midfielder who operates in the half-spaces, making dynamic forward runs to create overloads and contribute goals and assists. A hybrid between a central and attacking midfielder.",
+    "key_metrics": {
+      "progressive_passes_received_p90": 0.35,
+      "touches_att_pen_area_p90": 0.25,
+      "xag_p90": 0.20,
+      "npxg_p90": 0.20
+    }
+  },
+  "Advanced Playmaker / Number 10": {
+    "description": "The primary creative force of the team, operating in the space between the opposition's midfield and defense. Their main goal is to create high-quality chances for forwards.",
+    "key_metrics": {
+      "xag_p90": 0.40,
+      "key_passes_p90": 0.30,
+      "passes_into_penalty_area_p90": 0.20,
+      "sca_p90": 0.10
+    }
+  },
+  "Winger": {
+    "description": "A wide attacking player who stays close to the touchline to stretch the defense. They excel at one-on-one dribbling and delivering crosses into the box.",
+    "key_metrics": {
+      "progressive_carries_p90": 0.35,
+      "crosses_p90": 0.30,
+      "touches_att_third_p90": 0.20,
+      "successful_dribbles_p90": 0.15
+    }
+  },
+  "Inside Forward": {
+    "description": "A wide attacker who cuts inside from the flank to shoot on their stronger foot. They are more of a goal-scoring threat than a traditional winger.",
+    "key_metrics": {
+      "npxg_p90": 0.40,
+      "shots_p90": 0.25,
+      "touches_att_pen_area_p90": 0.20,
+      "progressive_carries_p90": 0.15
+    }
+  },
+  "Pressing Forward": {
+    "description": "The first line of defense. A forward whose primary contribution is defensive work rate, harassing defenders, and winning the ball back high up the pitch.",
+    "key_metrics": {
+      "pressures_att_third_p90": 0.45,
+      "pressure_regains_p90": 0.25,
+      "p_adj_tackles_p90": 0.15,
+      "npxg_plus_xag_p90": 0.15
+    }
+  },
+  "Target Man": {
+    "description": "A physically imposing forward who serves as the focal point of the attack. They excel at winning aerial duels, holding up the ball to bring teammates into play, and scoring from close range.",
+    "key_metrics": {
+      "aerial_duels_won_p90": 0.45,
+      "touches_att_pen_area_p90": 0.25,
+      "goals_p90": 0.20,
+      "fouls_won_p90": 0.10
+    }
+  },
+  "Complete Forward": {
+    "description": "A physically imposing forward who serves as the focal point of the attack. They excel at winning aerial duels, holding up the ball to bring teammates into play, and scoring from close range.",
+    "key_metrics": {
+      "gca_90": 0.45,
+      "touches_att_pen_area_p90": 0.25,
+      "sca_90": 0.20,
+      "successful_dribbles_p90": 0.10
+    }
+  },
+  "Poacher / Goal Hanger": {
+    "description": "A forward who specializes in goal-scoring from inside the penalty area. They have excellent movement, positioning, and finishing ability, but typically contribute less to build-up play.",
+    "key_metrics": {
+      "npxg_p90": 0.50,
+      "touches_att_pen_area_p90": 0.25,
+      "np_goals_minus_npxg": 0.15,
+      "shots_on_target_pct": 0.10
+    }
+  },
+  "False Nine": {
+    "description": "A center forward who drops deep into midfield to create space for wingers and attacking midfielders running in behind. They are a creative link player rather than an out-and-out striker.",
+    "key_metrics": {
+      "progressive_passes_received_p90": 0.35,
+      "xag_p90": 0.30,
+      "touches_mid_third_p90": 0.20,
+      "key_passes_p90": 0.15
+    }
+  },
+
+  "Sweeper Keeper": {
+    "description": "A goalkeeper who is comfortable playing high off their line, acting as an extra defender to intercept through balls and initiate attacks with their distribution.",
+    "key_metrics": {
+      "gk_avg_def_action_distance": 0.40,
+      "gk_def_actions_outside_pen_area_p90": 0.30,
+      "long_pass_completion_pct": 0.20,
+      "gk_psxg_plus_minus_p90": 0.10
+    }
+  },
+  "Shot Stopper": {
+    "description": "A traditional goalkeeper whose primary strength is saving shots, particularly those of high quality. They are valued for their reflexes and ability to prevent goals above expectation.",
+    "key_metrics": {
+      "gk_psxg_plus_minus_p90": 0.50,
+      "gk_save_pct": 0.25,
+      "gk_psxg_p90": 0.15,
+      "gk_crosses_stopped_pct": 0.10
+    }
+  }
+}
