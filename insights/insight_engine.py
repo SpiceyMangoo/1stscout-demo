@@ -22,7 +22,7 @@ class InsightEngine:
             archetypes (Dict[str, Any]): The loaded dictionary of player archetypes and their key metrics.
         """
         self.client = OpenAI(api_key=OPENAI_API_KEY)
-        self.model_name = "gpt-4o"
+        self.model_name = "gpt-4.1-nano-2025-04-14"
         self.archetypes = archetypes
         try:
             with open(INSIGHTS_PERSONA_PATH, 'r') as f:
