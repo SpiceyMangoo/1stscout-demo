@@ -168,7 +168,7 @@ def create_plot(x_axis: str, y_axis: str, title: str) -> None:
 class ScoutAgent:
     def __init__(self):
         self.client = OpenAI(api_key=OPENAI_API_KEY)
-        self.model_name = "gpt-4o"
+        self.model_name = "gpt-4.1-nano-2025-04-14"
         
         ### INSIGHT ENGINE INTEGRATION (2/3) - INSTANTIATION ###
         self.insight_engine = InsightEngine(archetypes=ARCHETYPES)
