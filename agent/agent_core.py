@@ -199,7 +199,7 @@ class ScoutAgent:
 
         try:
             response = self.client.chat.completions.create(
-                model="gpt-3.5-turbo",
+                model="gpt-4.1-nano-2025-04-14",
                 messages=messages,
                 temperature=0,
                 max_tokens=10 
