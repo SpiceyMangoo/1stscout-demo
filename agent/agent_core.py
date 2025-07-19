@@ -285,12 +285,15 @@ class ScoutAgent:
         return f"Action '{function_name}' was completed successfully."
 
     def process_query(self, query: str, chat_history: list, full_df: pd.DataFrame, last_result_df: pd.DataFrame, active_archetype: str, current_logbooks: Dict[str, pd.DataFrame]) -> Dict[str, Any]:
+
+        response = {}
+        summary_text = ""
         
         # Initialize variables for the response at the beginning of the function.
         result_df = None
         plotly_fig = None
         display_df = None
-        summary_text = "" # Initialize as empty to act as a flag for the final summary logic.
+        # Initialize as empty to act as a flag for the final summary logic.
 
         # --- DYNAMIC PROMPT ENGINEERING ---
         # Before every query, get the real-time schemas of all loaded custom logbooks.
