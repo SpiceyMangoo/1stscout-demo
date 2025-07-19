@@ -18,19 +18,18 @@ def create_logbook_template(logbook_name: str, metrics: List[Dict[str, str]]) ->
     return processed_data
 
 # --- NEW FUNCTION 1: load_logbook ---
-def load_logbook(uploaded_file: Any) -> None:
-    """
-    Loads a user-uploaded CSV logbook into the session state.
-
-    This function takes a Streamlit UploadedFile object, reads it into a pandas
-    DataFrame, creates a sanitized, machine-readable key from the filename,
-    and stores the DataFrame in a dedicated dictionary within st.session_state.
-
-    Args:
-        uploaded_file: The file object from a Streamlit file_uploader widget.
-    """
-    if uploaded_file is None:
-        return
+def load_logbook(current_logbooks: Dict[str, pd.DataFrame], uploaded_file: Any) -> Dict[str, pd.DataFrame]:
+    """Loads a user-uploaded CSV into the provided logbooks dictionary."""
+    file_name = uploaded_file.name
+    logbook_key = file_name.lower().replace('.csv', '').replace(' ', '_')
+    try:
+        string_data = StringIO(uploaded_file.getvalue().decode('utf-8'))
+        df = pd.read_csv(string_data)
+        current_logbooks[logbook_key] = df
+        print(f"DIAGNOSTIC: Loaded logbook '{logbook_key}' with columns: {df.columns.tolist()}")
+    except Exception as e:
+        print(f"ERROR: Failed to load logbook '{file_name}'. Details: {e}")
+    return current_logbooks
 
     # Sanitize the filename to use as a dictionary key.
     # e.g., "U19 Wellness Log.csv" -> "u19_wellness_log"
