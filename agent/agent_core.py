@@ -2,8 +2,6 @@ import pandas as pd
 import json
 import os
 from typing import Tuple, Dict, Any, List
-import streamlit as st # Import Streamlit to access the global session_state
-import datetime
 
 import plotly.graph_objects as go
 import plotly.express as px
@@ -180,43 +178,27 @@ def add_log_entry(logbook_name: str, data: Dict[str, Any]) -> None:
     pass
 
 def _internal_add_log_entry(logbook_name: str, data: Dict[str, Any]) -> pd.DataFrame:
+def _internal_add_log_entry(current_logbooks: Dict[str, pd.DataFrame], logbook_name: str, data: Dict[str, Any]) -> Dict[str, pd.DataFrame]:
     """
-    The internal implementation for adding an entry to a logbook DataFrame stored in st.session_state.
-    This function performs the actual data manipulation, ensuring safety and consistency.
+    Internal implementation for adding an entry to a logbook DataFrame.
+    This function is now pure and does not depend on session_state.
     """
-    if 'logbooks' not in st.session_state or not st.session_state.get('logbooks'):
-        raise ValueError("No logbooks have been loaded into the session yet.")
-        
-    if logbook_name not in st.session_state['logbooks']:
-        raise ValueError(f"Logbook '{logbook_name}' not found. Available logbooks are: {list(st.session_state['logbooks'].keys())}")
+    if logbook_name not in current_logbooks:
+        raise ValueError(f"Logbook '{logbook_name}' not found.")
 
-    logbook_df = st.session_state['logbooks'][logbook_name]
-
-    # Create a new dictionary for the row, ensuring it respects the original DataFrame's columns.
+    logbook_df = current_logbooks[logbook_name]
     new_entry = {}
     for col in logbook_df.columns:
         new_entry[col] = data.get(col)
-
-    # Convert the single-row dictionary into a one-row DataFrame.
     new_row_df = pd.DataFrame([new_entry])
-
-    # Append the new row to the existing DataFrame in the session state.
-    # `ignore_index=True` is crucial to ensure the new combined DataFrame has a clean, continuous index.
     updated_df = pd.concat([logbook_df, new_row_df], ignore_index=True)
-    
-    # Overwrite the old DataFrame in the session state with the updated one, making the change persistent for the session.
-    st.session_state['logbooks'][logbook_name] = updated_df
 
+    # Update the dictionary and return the entire updated collection
+    current_logbooks[logbook_name] = updated_df
     print(f"DIAGNOSTIC: Successfully added entry to '{logbook_name}'. New shape: {updated_df.shape}")
-    return updated_df
-
+    return current_logbooks
+    
 # --- SPRINT 3 NEW FEATURE: LOGBOOK Q&A TOOL ---
-def query_logbook(logbook_name: str, question: str) -> None:
-    """
-    Use this tool to answer questions about the data INSIDE a specific custom logbook.
-    Use it for queries like "who is the striker in trials?", "what is Tianco's email?",
-    "how many players are in the wellness log?", or "remove the 3rd row".
-    """
     # This is the placeholder schema for the agent.
     pass
 
@@ -303,7 +285,7 @@ class ScoutAgent:
         # Provide a simple fallback message if the summary generation fails
         return f"Action '{function_name}' was completed successfully."
 
-    def process_query(self, query: str, chat_history: list, full_df: pd.DataFrame, last_result_df: pd.DataFrame, active_archetype: str) -> Dict[str, Any]:
+    defdef process_query(self, query: str, chat_history: list, full_df: pd.DataFrame, last_result_df: pd.DataFrame, active_archetype: str, current_logbooks: Dict[str, pd.DataFrame]) -> Dict[str, Any]:
         
         # Initialize variables for the response at the beginning of the function.
         result_df = None
