@@ -1,8 +1,12 @@
 import streamlit as st
 import pandas as pd
 import json
+import uuid # Import the uuid library to generate unique keys for dynamic widgets
+
 from agent.agent_core import ScoutAgent, SYNONYM_LIBRARY
 from utils.data_handler import process_uploaded_csv
+# Import the new function from our logbook handler
+from utils.logbook_handler import create_logbook_template, load_logbook
 
 class WebUI:
     def __init__(self):
@@ -14,17 +18,9 @@ class WebUI:
             initial_sidebar_state="expanded"
         )
         st.title("1stScout Demo ⚽")
-        st.caption("v1.3 (On-Demand Insights)")
+        st.caption("v1.4 (Logbook Creator MVP)")
         
         try:
-            ### START OF DIAGNOSTIC CODE ###
-            print("--- DIAGNOSTIC START ---")
-            print(f"Inspecting 'ScoutAgent' before instantiation...")
-            print(f"Type of ScoutAgent: {type(ScoutAgent)}")
-            print(f"Attributes of ScoutAgent: {dir(ScoutAgent)}")
-            print("--- DIAGNOSTIC END ---")
-            ### END OF DIAGNOSTIC CODE ###
-
             self.agent = ScoutAgent() 
             
         except Exception as e:
@@ -45,19 +41,78 @@ class WebUI:
             st.session_state.raw_df_history = []
         if "active_archetype" not in st.session_state:
             st.session_state.active_archetype = None
-            
-        # ---------------------- CHANGE 2.1: ADDITION START ---------------------
-        # Initialize keys for the on-demand insight feature.
-        # selected_player_for_note will be controlled by the new selectbox widget.
-        # current_analyst_note will store the most recently generated note.
         if "selected_player_for_note" not in st.session_state:
             st.session_state.selected_player_for_note = None
         if "current_analyst_note" not in st.session_state:
             st.session_state.current_analyst_note = None
-        # ---------------------- CHANGE 2.1: ADDITION END -----------------------
+        if 'logbooks' not in st.session_state:
+            st.session_state['logbooks'] = {}
+        if 'new_logbook_metrics' not in st.session_state:
+            st.session_state.new_logbook_metrics = []
+
+    def _render_creator_wizard(self):
+        """
+        Renders the complete user interface for the Logbook Creator wizard.
+        This function is self-contained and manages the state of the creation process.
+        """
+        st.subheader("2. Create a New Logbook Template")
+        st.info("Define the metrics for your custom logbook and download the CSV template.", icon="✍️")
+
+        logbook_name = st.text_input("New Logbook Name", placeholder="e.g., 'U19 Wellness Log'")
+
+        st.markdown("**Define Your Metrics:**")
+        
+        # --- Display the list of metrics added so far ---
+        # This loop dynamically displays the metrics the user has defined.
+        for i, metric in enumerate(st.session_state.new_logbook_metrics):
+            col1, col2, col3 = st.columns([4, 3, 1])
+            col1.text_input("Metric Name", value=metric['name'], key=f"metric_name_{metric['id']}", disabled=True)
+            col2.text_input("Data Type", value=metric['type'], key=f"metric_type_{metric['id']}", disabled=True)
+            if col3.button("❌", key=f"delete_metric_{metric['id']}", help="Remove this metric"):
+                st.session_state.new_logbook_metrics.pop(i)
+                st.rerun()
+
+        # --- Input controls for adding a new metric ---
+        with st.form(key="add_metric_form", clear_on_submit=True):
+            col1, col2 = st.columns(2)
+            new_metric_name = col1.text_input("New Metric Name", key="new_metric_name_input")
+            new_metric_type = col2.selectbox("Data Type", ["Number", "Text", "Date"], key="new_metric_type_input")
+            
+            submitted = st.form_submit_button("Add Metric")
+            if submitted and new_metric_name:
+                st.session_state.new_logbook_metrics.append({
+                    "id": str(uuid.uuid4()), # Assign a unique ID for stable widget keys
+                    "name": new_metric_name,
+                    "type": new_metric_type
+                })
+                st.rerun()
+            elif submitted and not new_metric_name:
+                st.warning("Metric name cannot be empty.")
+
+        # --- The Download Button Logic (The "Engine") ---
+        # This section only appears if the user has defined a name and at least one metric.
+        if logbook_name and st.session_state.new_logbook_metrics:
+            st.divider()
+            
+            # The core of the engine: call our handler to get the CSV data.
+            try:
+                csv_data = create_logbook_template(logbook_name, st.session_state.new_logbook_metrics)
+                
+                # Sanitize the logbook name to create a valid, safe filename for download.
+                safe_filename = "".join(c for c in logbook_name if c.isalnum() or c in (' ', '_')).rstrip().replace(' ', '_')
+                
+                st.download_button(
+                   label="✅ Download Logbook Template",
+                   data=csv_data,
+                   file_name=f"{safe_filename}.csv",
+                   mime="text/csv",
+                   use_container_width=True,
+                )
+            except Exception as e:
+                st.error(f"Could not generate template: {e}")
 
     def _render_sidebar(self):
-        """Renders the sidebar for file uploading and application info."""
+        """Renders the sidebar for file uploading and the new creator wizard."""
         with st.sidebar:
             st.header("Controls")
             st.subheader("1. Upload Your Data")
@@ -71,20 +126,16 @@ class WebUI:
             if uploaded_file is not None and uploaded_file.name != st.session_state.uploaded_file_name:
                 with st.spinner(f"Processing '{uploaded_file.name}'..."):
                     try:
+                        # (Existing logic remains unchanged)
                         processed_df = process_uploaded_csv(uploaded_file, SYNONYM_LIBRARY)
                         st.session_state.full_df = processed_df
                         st.session_state.data_loaded = True
-                        
-                        # Reset chat on new file upload
                         st.session_state.messages = []
                         st.session_state.raw_df_history = []
                         st.session_state.uploaded_file_name = uploaded_file.name
                         st.session_state.active_archetype = None 
-                        
-                        # Also reset the insight state when a new file is uploaded
                         st.session_state.current_analyst_note = None
                         st.session_state.selected_player_for_note = None
-                        
                         st.success("Data processed successfully!")
                         st.info("You can now chat with the Copilot in the main window.")
                         
@@ -92,6 +143,34 @@ class WebUI:
                         st.error(f"File Processing Error: {e}")
                         st.session_state.data_loaded = False
                         st.session_state.uploaded_file_name = None
+
+            # --- RENDER THE NEW WIZARD IN THE SIDEBAR ---
+            st.divider()
+            st.subheader("2. Upload Custom Logbooks")
+            
+            uploaded_logbooks = st.file_uploader(
+                "Upload one or more of your custom CSV logbook files here.",
+                type="csv",
+                accept_multiple_files=True, # Allow multiple logbooks to be uploaded
+                key="logbook_uploader"
+            )
+
+            if uploaded_logbooks:
+                for logbook_file in uploaded_logbooks:
+                    # Use the file's unique ID to prevent reprocessing the same file on reruns
+                    if (logbook_file.name, logbook_file.size) not in st.session_state.get('processed_logbooks', set()):
+                        with st.spinner(f"Loading logbook '{logbook_file.name}'..."):
+                            load_logbook(logbook_file) # This function will add it to st.session_state['logbooks']
+                        
+                        # Add the ID to a set of processed files
+                        if 'processed_logbooks' not in st.session_state:
+                         st.session_state['processed_logbooks'] = set()
+                         st.session_state.processed_logbooks.add((logbook_file.name, logbook_file.size))
+
+            # Move the creator wizard to be the third item
+            st.divider()
+            st.subheader("3. Create a New Logbook Template")
+            self._render_creator_wizard()
 
     def _render_chat(self):
         """Renders the main chat interface for user interaction."""
@@ -104,6 +183,13 @@ class WebUI:
                 if "plotly_fig" in msg and msg["plotly_fig"] is not None:
                     st.plotly_chart(msg["plotly_fig"], use_container_width=True)
 
+        if st.session_state.get('logbooks'):
+            with st.expander("✅ View Loaded Logbooks"):
+                for logbook_name, df in st.session_state['logbooks'].items():
+                    st.markdown(f"**Logbook: `{logbook_name}`**")
+                    st.dataframe(df, use_container_width=True)
+                    st.divider()
+        
         if prompt := st.chat_input("Find players, or ask a question about the current view..."):
             st.session_state.messages.append({"role": "user", "content": prompt})
             with st.chat_message("user"):
@@ -202,8 +288,6 @@ class WebUI:
                 if st.session_state.current_analyst_note:
                     with st.container(border=True):
                         st.markdown(st.session_state.current_analyst_note)
-                # ---------------------- CHANGE 2.4: ADDITION END -----------------------
-
 
     def run(self):
         """The main execution method that renders the entire UI."""
@@ -211,6 +295,6 @@ class WebUI:
         self._render_sidebar()
         
         if st.session_state.data_loaded:
-            self._render_chat()
+            self._render_chat() # This part will be enhanced in later sprints
         else:
-            st.info("👋 Welcome to the 1stScout Demo! Please upload a CSV file using the sidebar to get started.")
+            st.info("👋 Welcome to the 1stScout Demo! Please upload a CSV file or create a new logbook template to get started.")
