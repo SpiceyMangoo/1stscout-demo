@@ -177,7 +177,6 @@ def add_log_entry(logbook_name: str, data: Dict[str, Any]) -> None:
     # definition clean and separate from the execution logic.
     pass
 
-def _internal_add_log_entry(logbook_name: str, data: Dict[str, Any]) -> pd.DataFrame:
 def _internal_add_log_entry(current_logbooks: Dict[str, pd.DataFrame], logbook_name: str, data: Dict[str, Any]) -> Dict[str, pd.DataFrame]:
     """
     Internal implementation for adding an entry to a logbook DataFrame.
@@ -285,7 +284,7 @@ class ScoutAgent:
         # Provide a simple fallback message if the summary generation fails
         return f"Action '{function_name}' was completed successfully."
 
-    defdef process_query(self, query: str, chat_history: list, full_df: pd.DataFrame, last_result_df: pd.DataFrame, active_archetype: str, current_logbooks: Dict[str, pd.DataFrame]) -> Dict[str, Any]:
+    def process_query(self, query: str, chat_history: list, full_df: pd.DataFrame, last_result_df: pd.DataFrame, active_archetype: str, current_logbooks: Dict[str, pd.DataFrame]) -> Dict[str, Any]:
         
         # Initialize variables for the response at the beginning of the function.
         result_df = None
@@ -295,7 +294,7 @@ class ScoutAgent:
 
         # --- DYNAMIC PROMPT ENGINEERING ---
         # Before every query, get the real-time schemas of all loaded custom logbooks.
-        logbook_schemas = get_all_logbook_schemas()
+        logbook_schemas = get_all_logbook_schemas(current_logbooks)
         
         # This block of text is dynamically generated. If no logbooks are loaded, it will be empty.
         logbook_context_prompt = ""
@@ -401,13 +400,16 @@ class ScoutAgent:
             
             # --- SPRINT 2 MODIFICATION: Execution logic for the new tool ---
             elif function_name == 'add_log_entry':
-                updated_logbook_df = _internal_add_log_entry(**function_args)
-                # The result to be displayed is the entire, updated logbook.
-                display_df = updated_logbook_df
-                # We also set result_df here so the summary generation has access to it if needed.
-                result_df = updated_logbook_df
+            # Pass the current state to the tool, and capture the updated state it returns
+            updated_logbooks = _internal_add_log_entry(current_logbooks, **function_args)
+            display_df = updated_logbooks[function_args['logbook_name']]
+            # Add the updated state to the response dictionary
+            response['updated_logbooks'] = updated_logbooks
 
-            elif function_name == 'query_logbook':
+        elif function_name == 'query_logbook':
+            # Pass the current state to the tool
+            answer_text = self._internal_query_logbook(current_logbooks, **function_args)
+            summary_text = answer_text
              # The internal function returns a simple string answer.
              answer_text = self._internal_query_logbook(**function_args)
              # We will hijack the 'summary_text' to deliver the answer directly to the UI.
@@ -439,14 +441,15 @@ if not summary_text:
             for col in fit_score_cols:
                 final_display_df[col] = final_display_df[col].round(3)
             display_df = final_display_df
-        
-        return {
-            "summary_text": summary_text, 
-            "dataframe": display_df, 
-            "plotly_fig": plotly_fig, 
-            "raw_dataframe": result_df if function_name != 'add_log_entry' else None,
-            "tool_call": {"name": function_name, "arguments": function_args},
-        }
+
+response.update({
+    "summary_text": summary_text, 
+    "dataframe": display_df, 
+    "plotly_fig": plotly_fig, 
+    "raw_dataframe": result_df if function_name not in ['add_log_entry', 'query_logbook'] else None,
+    "tool_call": {"name": function_name, "arguments": function_args},
+ })
+return response 
 
     # ---------------------- CHANGE 1.2: ADDITION START ---------------------
     def generate_on_demand_insight(self, player_name: str, full_df: pd.DataFrame, active_archetype: str) -> str:
