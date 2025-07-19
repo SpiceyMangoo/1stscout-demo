@@ -51,21 +51,9 @@ def load_logbook(current_logbooks: Dict[str, pd.DataFrame], uploaded_file: Any) 
         print(f"ERROR: Failed to load logbook '{file_name}'. Details: {e}")
 
 # --- NEW FUNCTION 2: get_all_logbook_schemas ---
-def get_all_logbook_schemas() -> str:
-    """
-    Inspects all loaded logbooks in the session state and generates a
-    formatted string describing their schemas (name and columns).
-
-    This function is critical for dynamic prompt engineering. It provides the
-    agent with the necessary "world knowledge" of what custom databases are
-    available and what data they can contain.
-
-    Returns:
-        A formatted string detailing the schemas of all loaded logbooks,
-        ready to be injected into the agent's system prompt.
-        Returns an empty string if no logbooks are loaded.
-    """
-    if 'logbooks' not in st.session_state or not st.session_state['logbooks']:
+def get_all_logbook_schemas(current_logbooks: Dict[str, pd.DataFrame]) -> str:
+    """Inspects the provided logbooks dictionary and generates a schema string."""
+    if not current_logbooks:
         return ""
 
     schema_descriptions = []
