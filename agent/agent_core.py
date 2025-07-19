@@ -2,6 +2,8 @@ import pandas as pd
 import json
 import os
 from typing import Tuple, Dict, Any, List
+import streamlit as st # Import Streamlit to access the global session_state
+import datetime
 
 import plotly.graph_objects as go
 import plotly.express as px
@@ -9,9 +11,9 @@ import plotly.express as px
 from openai import OpenAI
 from langchain_core.utils.function_calling import convert_to_openai_function
 from config.settings import OPENAI_API_KEY, ARCHETYPES_PATH, SYNONYM_LIBRARY_PATH, NLU_MAPPINGS_PATH
-
-### INSIGHT ENGINE INTEGRATION (1/3) - IMPORT ###
 from insights.insight_engine import InsightEngine
+
+from utils.logbook_handler import get_all_logbook_schemas
 
 
 def _load_data() -> Tuple[dict, dict, dict]:
@@ -165,211 +167,287 @@ def create_plot(x_axis: str, y_axis: str, title: str) -> None:
     """Use this tool to create a plot of the players from the most recent search results."""
     pass
 
+def add_log_entry(logbook_name: str, data: Dict[str, Any]) -> None:
+    """
+    Use this tool to add a new row of data to a specified custom logbook. You must provide the exact
+    logbook_name from the <AVAILABLE_LOGBOOKS> context and a dictionary of data where keys are the exact
+    column names. If a date is not specified by the user for a 'date' column, you MUST use today's date
+    in 'YYYY-MM-DD' format.
+    """
+    # This function is a schema placeholder for the OpenAI tools integration.
+    # The actual implementation is handled by `_internal_add_log_entry` to keep the tool
+    # definition clean and separate from the execution logic.
+    pass
+
+def _internal_add_log_entry(logbook_name: str, data: Dict[str, Any]) -> pd.DataFrame:
+    """
+    The internal implementation for adding an entry to a logbook DataFrame stored in st.session_state.
+    This function performs the actual data manipulation, ensuring safety and consistency.
+    """
+    if 'logbooks' not in st.session_state or not st.session_state.get('logbooks'):
+        raise ValueError("No logbooks have been loaded into the session yet.")
+        
+    if logbook_name not in st.session_state['logbooks']:
+        raise ValueError(f"Logbook '{logbook_name}' not found. Available logbooks are: {list(st.session_state['logbooks'].keys())}")
+
+    logbook_df = st.session_state['logbooks'][logbook_name]
+
+    # Create a new dictionary for the row, ensuring it respects the original DataFrame's columns.
+    new_entry = {}
+    for col in logbook_df.columns:
+        new_entry[col] = data.get(col)
+
+    # Convert the single-row dictionary into a one-row DataFrame.
+    new_row_df = pd.DataFrame([new_entry])
+
+    # Append the new row to the existing DataFrame in the session state.
+    # `ignore_index=True` is crucial to ensure the new combined DataFrame has a clean, continuous index.
+    updated_df = pd.concat([logbook_df, new_row_df], ignore_index=True)
+    
+    # Overwrite the old DataFrame in the session state with the updated one, making the change persistent for the session.
+    st.session_state['logbooks'][logbook_name] = updated_df
+
+    print(f"DIAGNOSTIC: Successfully added entry to '{logbook_name}'. New shape: {updated_df.shape}")
+    return updated_df
+
+# --- SPRINT 3 NEW FEATURE: LOGBOOK Q&A TOOL ---
+def query_logbook(logbook_name: str, question: str) -> None:
+    """
+    Use this tool to answer questions about the data INSIDE a specific custom logbook.
+    Use it for queries like "who is the striker in trials?", "what is Tianco's email?",
+    "how many players are in the wellness log?", or "remove the 3rd row".
+    """
+    # This is the placeholder schema for the agent.
+    pass
+
 class ScoutAgent:
     def __init__(self):
         self.client = OpenAI(api_key=OPENAI_API_KEY)
         self.model_name = "gpt-4.1-nano-2025-04-14"
-        
-        ### INSIGHT ENGINE INTEGRATION (2/3) - INSTANTIATION ###
         self.insight_engine = InsightEngine(archetypes=ARCHETYPES)
-    
-    def _classify_intent(self, query: str, chat_history: list) -> str:
-        """
-        A simple, fast classification call to determine if the user wants a new search or a refinement.
-        """
-        valid_archetypes = list(ARCHETYPES.keys())
-        archetype_list_for_prompt = "\n".join(f"- '{name}'" for name in valid_archetypes)
 
-        classifier_prompt = f"""
-        You are an intent classifier. Your only job is to determine if the user's request is for a 'new_search' or a 'refinement'.
-        - A 'new_search' happens when the user explicitly mentions a player archetype, signalling they want to start over.
-        - A 'refinement' happens when the user asks to filter, sort, plot, or add information to the players they are already looking at.
-
-        Valid Archetypes:
-        {archetype_list_for_prompt}
-
-        Based on the user's latest query, classify the intent as 'new_search' or 'refinement'.
-        Your response MUST be one word: either 'new_search' or 'refinement'.
+    # PASTE THE NEW METHOD HERE
+    def _internal_query_logbook(self, logbook_name: str, question: str) -> str:
         """
-        
-        messages = [{"role": "system", "content": classifier_prompt}]
-        for msg in chat_history:
-            messages.append({"role": msg["role"], "content": msg["content"]})
-        messages.append({"role": "user", "content": query})
+        Internal implementation for querying a logbook DataFrame using an LLM for comprehension.
+        """
+        if 'logbooks' not in st.session_state or logbook_name not in st.session_state['logbooks']:
+            return f"Error: The logbook '{logbook_name}' was not found in the current session."
+
+        logbook_df = st.session_state['logbooks'][logbook_name]
+
+        if logbook_df.empty:
+            return f"The '{logbook_name}' logbook is currently empty."
+
+        # Convert the DataFrame to a simple, clean Markdown string for the LLM.
+        # This transforms the problem from "data analysis" to "reading comprehension".
+        df_as_markdown = logbook_df.to_markdown(index=False)
+
+        # Create a focused, lightweight prompt for the Q&A task.
+        qa_prompt = f"""You are a data analysis assistant. Your sole task is to answer a user's question based ONLY on the data provided below.
+        If the user asks to modify the data (e.g., "remove a row"), state that you cannot modify the data but provide the information they need to do it themselves.
+
+        <data_context>
+        {df_as_markdown}
+        </data_context>
+
+        Question: {question}
+
+        Answer:"""
 
         try:
+            # Use self.client and self.model_name, which are defined in __init__
             response = self.client.chat.completions.create(
-                model="gpt-4.1-nano-2025-04-14",
-                messages=messages,
-                temperature=0,
-                max_tokens=10 
+                model=self.model_name,
+                messages=[{"role": "user", "content": qa_prompt}],
+                temperature=0.0
             )
+            answer = response.choices[0].message.content
+            return answer
+        except Exception as e:
+            print(f"ERROR: Logbook Q&A LLM call failed: {e}")
+            return "Sorry, I had a problem analyzing that logbook."
+    
+    def _classify_intent(self, query: str, chat_history: list) -> str:
+        # ... (This method's logic is unchanged but remains part of the class) ...
+        valid_archetypes = list(ARCHETYPES.keys())
+        archetype_list_for_prompt = "\n".join(f"- '{name}'" for name in valid_archetypes)
+        classifier_prompt = f"You are an intent classifier. Your only job is to determine if the user's request is for a 'new_search' or a 'refinement'.\n- A 'new_search' happens when the user explicitly mentions a player archetype, signalling they want to start over.\n- A 'refinement' happens when the user asks to filter, sort, plot, or add information to the players they are already looking at.\n\nValid Archetypes:\n{archetype_list_for_prompt}\n\nBased on the user's latest query, classify the intent as 'new_search' or 'refinement'. Your response MUST be one word: either 'new_search' or 'refinement'."
+        messages = [{"role": "system", "content": classifier_prompt}] + chat_history + [{"role": "user", "content": query}]
+        try:
+            response = self.client.chat.completions.create(model="gpt-4.1-nano-2025-04-14", messages=messages, temperature=0, max_tokens=10)
             intent = response.choices[0].message.content.strip().lower()
-            if intent not in ['new_search', 'refinement']:
-                return 'refinement'
-            return intent
+            return 'refinement' if intent not in ['new_search', 'refinement'] else intent
         except Exception as e:
             print(f"DIAGNOSTIC: Intent classification failed: {e}")
             return 'refinement'
 
     def process_query(self, query: str, chat_history: list, full_df: pd.DataFrame, last_result_df: pd.DataFrame, active_archetype: str) -> Dict[str, Any]:
+        
+        # Initialize variables for the response at the beginning of the function.
+        result_df = None
+        plotly_fig = None
+        display_df = None
+        summary_text = "" # Initialize as empty to act as a flag for the final summary logic.
+
+        # --- DYNAMIC PROMPT ENGINEERING ---
+        # Before every query, get the real-time schemas of all loaded custom logbooks.
+        logbook_schemas = get_all_logbook_schemas()
+        
+        # This block of text is dynamically generated. If no logbooks are loaded, it will be empty.
+        logbook_context_prompt = ""
+        if logbook_schemas:
+            logbook_context_prompt = f"""<section name="AVAILABLE_LOGBOOKS">
+     You have access to the following custom logbooks. When the user asks to log data, you MUST use the `add_log_entry` tool. When they ask a question about the data in a logbook, you MUST use the `query_logbook` tool.
+     {logbook_schemas}
+     </section>
+     """
+
         valid_archetypes = list(ARCHETYPES.keys())
         archetype_list_for_prompt = "\n".join(f"- '{name}'" for name in valid_archetypes)
-        
         column_list_for_prompt = json.dumps(list(full_df.columns)) if full_df is not None else "[]"
 
-        system_prompt = f"""You are an expert AI assistant for a football scout. Your job is to translate user requests into precise tool calls.
+        # --- FINAL SYSTEM PROMPT ---
+        # This version includes the full rule hierarchy for all tools.
+        system_prompt = f"""You are an expert AI assistant and data entry specialist for a football scout. Your primary job is to translate natural language user requests into precise tool calls.
+
+        {logbook_context_prompt}
+
         <rules>
-        <rule>
-        <name>Tool Choice Logic</name>
-        - Use `new_search` ONLY when the user wants to start a completely fresh search, identified by a new primary archetype (e.g., "find all inside forwards", "show me box to box midfielders").
-        - Use `filter_and_sort` for ALL other cases of refining the current list of players.
-        - Use `create_plot` when the user asks to 'plot', 'visualize', 'chart', 'graph', or 'compare' data.
-        </rule>
-        <rule>
-        <name>New Search Construction</name>
-        - A `new_search` MUST have an `archetype_name`.
-        - If the user includes other conditions in their initial prompt, like age (e.g., "u26", "under 26"), you MUST add these as a `filters` list. Example: "find inside forwards u26" -> `new_search(archetype_name="Inside Forward", filters=[{{"column": "age", "operator": "less_than", "value": 26}}])`.
-        <valid_archetypes>{archetype_list_for_prompt}</valid_archetypes>
-        </rule>
-        <rule>
-        <name>Filter and Sort Construction</name>
-        - A filter is a dictionary: {{"column": "...", "operator": "...", "value": ...}}. Valid operators: `greater_than`, `less_than`, `equal_to`, `contains`, `is_in`.
-        - For requests like "show players with npxg p90 above 0.48", construct a filter: `{{"column": "npxg_p90", "operator": "greater_than", "value": 0.48}}`.
-        - For requests like "who are also pressing forwards?", use the `add_archetype_as_column` parameter: `add_archetype_as_column="Pressing Forward"`.
-        </rule>
-        <rule>
-        <name>Fit Score Filtering</name>
-        - If the user says "fit score", you must determine the correct column name. The list of available columns will be in the format `fit_score_[archetype_name]`.
-        - You MUST use this full, exact name in your filter. Example: `filter_and_sort(filters=[{{"column": "fit_score_inside_forward", "operator": "greater_than", "value": 0.8}}])`.
-        </rule>
-        <rule>
-        <name>Available Columns</name>
-        - The columns available for filtering, sorting, and plotting will be provided in the chat history context. Always refer to the latest available list. A generic list is provided here for reference: {column_list_for_prompt}
-        - Do not invent column names. Always use a name from the available columns.
+     <rule name="Tool Choice Hierarchy - TOP PRIORITY">
+     1.  First, check if the user is asking a question ABOUT a custom logbook (e.g., "who is in trials?", "what is player X's email?", "summarize the wellness log"). If so, you MUST use the `query_logbook` tool. The user's `question` for this tool should be their full, original query.
+     2.  If it is not a question, check if the user wants to ADD data to a custom logbook (e.g., "log wellness data," "add RPE score"). If so, you MUST use the `add_log_entry` tool.
+     3.  If the query is not related to custom logbooks, then proceed to the player search tools (`new_search`, `filter_and_sort`, `create_plot`).
+     </rule>
+
+        <rule name="CRITICAL: Log Entry Construction">
+     - You MUST NOT call the `add_log_entry` tool unless the user's query provides BOTH a specific `logbook_name` AND the `data` to be logged.
+     - The `logbook_name` MUST EXACTLY match one of the names provided in the `<AVAILABLE_LOGBOOKS>` schema.
+     - The keys in the `data` dictionary MUST EXACTLY match the column names from that logbook's schema.
+     - If a 'date' column exists and the user does not specify a date, you MUST infer it as today's date: {datetime.date.today().strftime('%Y-%m-%d')}.
+     - Example Query: "add an entry to trials, log name, position, age, number - Tianco, ST, 21, 99"
+     - Correct Tool Call: `add_log_entry(logbook_name="trials", data={{"name": "Tianco", "position": "ST", "age": 21, "number": 99}})`
+     </rule>
+
+     - **NEW EXAMPLE:** The user might provide data in a "list of columns, list of values" format. You must correctly map them.
+     - **User Query:** "add an entry to trials, log name, position, age, number - Tianco, ST, 21, 99"
+     - **Your Logic:**
+     1. Identify the logbook: `trials`.
+     2. Identify the columns: `name`, `position`, `age`, `number`.
+     3. Identify the values: `Tianco`, `ST`, `21`, `99`.
+     4. Map them correctly.
+      - **Correct Tool Call:** `add_log_entry(logbook_name="trials", data={{"name": "Tianco", "position": "ST", "age": 21, "number": 99}})`
+     </rule>
+
+        <rule name="General">
+        - Your ONLY output MUST be a single, valid tool call based on the user's most recent query. Do not add any conversational text.
         </rule>
         </rules>
-        Your ONLY output MUST be a single, valid tool call. Do not add any conversational text.
         """
         
-        intent = self._classify_intent(query, chat_history)
-        print(f"DIAGNOSTIC: Classified intent as '{intent}'.")
-
-        context_provider_df = last_result_df if last_result_df is not None else full_df
-        messages = [{"role": "system", "content": system_prompt}] + chat_history
+        intent = "log_entry" if "log" in query.lower() or "entry" in query.lower() or "add" in query.lower() else self._classify_intent(query, chat_history)
         
-        if intent != 'new_search' and context_provider_df is not None and not context_provider_df.empty:
-            latest_columns = json.dumps(list(context_provider_df.columns))
-            messages.append({"role": "system", "content": f"<context>The user is currently viewing players with these available columns for filtering: {latest_columns}</context>"})
-            print("DIAGNOSTIC: Appending existing search context to prompt.")
-        else:
-            print("DIAGNOSTIC: Intent is 'new_search', context will not be appended.")
-            
+        messages = [{"role": "system", "content": system_prompt}] + chat_history
+        if intent != 'new_search' and last_result_df is not None and not last_result_df.empty:
+            messages.append({"role": "system", "content": f"<context>The user is viewing players with these columns: {json.dumps(list(last_result_df.columns))}</context>"})
         messages.append({"role": "user", "content": query})
 
-        tools = [{"type": "function", "function": convert_to_openai_function(f)} for f in [new_search, filter_and_sort, create_plot]]
+        # --- SPRINT 2 MODIFICATION: The new `add_log_entry` tool is now available to the agent ---
+        all_tools = [new_search, filter_and_sort, create_plot, add_log_entry, query_logbook]
+        tools = [{"type": "function", "function": convert_to_openai_function(f)} for f in all_tools]
         
         try:
             response = self.client.chat.completions.create(model=self.model_name, messages=messages, tools=tools, tool_choice="auto")
             response_message = response.choices[0].message
         except Exception as e:
-            print(f"FATAL: OpenAI API call failed: {e}")
-            return {"summary_text": f"I had a problem contacting the AI service. Details: {e}", "dataframe": None, "raw_dataframe": None, "plotly_fig": None, "tool_call": None}
+            return {"summary_text": f"Error contacting AI service: {e}", "dataframe": None, "raw_dataframe": None, "plotly_fig": None, "tool_call": None}
 
         if not response_message.tool_calls:
-            return {"summary_text": "I'm sorry, I couldn't determine the next action. Could you please rephrase your request?", "dataframe": None, "raw_dataframe": None, "plotly_fig": None, "tool_call": None}
+            return {"summary_text": "I'm sorry, I couldn't determine the next action. Please rephrase.", "dataframe": None, "raw_dataframe": None, "plotly_fig": None, "tool_call": None}
 
         tool_call = response_message.tool_calls[0]
         function_name = tool_call.function.name
         function_args = json.loads(tool_call.function.arguments)
+
+        # --- NEW: Pre-emptive Argument Validation ---
+        if function_name == 'add_log_entry':
+            if 'data' not in function_args or 'logbook_name' not in function_args:
+                # This catches cases where the LLM fails to provide all necessary arguments.
+                error_message = "I can do that, but I need you to specify both the logbook name and the data to add. For example: 'Add an entry to the wellness_log with 8 hours sleep and a soreness of 3.'"
+                return {"summary_text": error_message, "dataframe": None, "raw_dataframe": None, "plotly_fig": None, "tool_call": None}
         
         print(f"DEBUG: LLM chose tool '{function_name}' with args: {function_args}")
 
         result_df = None
         plotly_fig = None
+        display_df = None
         
-        archetype_for_this_turn = active_archetype
-        if function_name == 'new_search':
-            archetype_for_this_turn = function_args.get("archetype_name")
-        elif function_name == 'filter_and_sort':
-            archetype_for_this_turn = function_args.get('add_archetype_as_column', active_archetype)
-
         try:
             if function_name == 'new_search':
-                if full_df is None: raise ValueError("No data is available to search. Please upload a CSV file first.")
                 archetype = function_args.get("archetype_name")
-                if not archetype: raise ValueError("A new search must start with a primary archetype.")
-                
                 category = ARCHETYPE_TO_POSITION_CATEGORY.get(archetype)
                 initial_df = full_df[full_df['primary_position'].isin(POSITION_GROUPINGS.get(category, []))] if category else full_df
-
                 fit_score_col_name = f"fit_score_{archetype.lower().replace(' ', '_').replace('/', '_')}"
                 initial_df = initial_df.copy()
                 initial_df[fit_score_col_name] = _calculate_fit_score(initial_df, full_df, archetype)
-                
-                filters = function_args.get("filters", [])
-                result_df = _execute_search_and_filter(
-                    df=initial_df,
-                    normalization_context_df=full_df,
-                    filters=filters,
-                    sort_by=fit_score_col_name,
-                    sort_ascending=False
-                )
-
+                result_df = _execute_search_and_filter(df=initial_df, normalization_context_df=full_df, filters=function_args.get("filters", []), sort_by=fit_score_col_name, sort_ascending=False)
             elif function_name == 'filter_and_sort':
-                if last_result_df is None: raise ValueError("There are no previous search results to refine.")
                 result_df = _execute_search_and_filter(df=last_result_df, normalization_context_df=full_df, **function_args)
-            
             elif function_name == 'create_plot':
-                if last_result_df is None or last_result_df.empty: raise ValueError("I can't create a plot because you aren't viewing any players.")
                 plotly_fig = _internal_create_plot(df=last_result_df, full_df=full_df, **function_args)
+            
+            # --- SPRINT 2 MODIFICATION: Execution logic for the new tool ---
+            elif function_name == 'add_log_entry':
+                updated_logbook_df = _internal_add_log_entry(**function_args)
+                # The result to be displayed is the entire, updated logbook.
+                display_df = updated_logbook_df
+                # We also set result_df here so the summary generation has access to it if needed.
+                result_df = updated_logbook_df
+
+            elif function_name == 'query_logbook':
+             # The internal function returns a simple string answer.
+             answer_text = self._internal_query_logbook(**function_args)
+             # We will hijack the 'summary_text' to deliver the answer directly to the UI.
+             summary_text = answer_text
+             # Ensure no dataframe is displayed for this type of response.
+             display_df = None
+            result_df = None
 
         except (ValueError, KeyError) as e:
-            error_message = f"I couldn't complete that request. {e}"
-            print(error_message)
-            return {"summary_text": error_message, "dataframe": None, "raw_dataframe": None, "plotly_fig": None, "tool_call": None}
+            return {"summary_text": f"I couldn't complete that request: {e}", "dataframe": None, "raw_dataframe": None, "plotly_fig": None, "tool_call": None}
             
-        summary_prompt = "You are an AI Football Scout. Your tool call was successful. Based on the original query and the tool called, write a brief, friendly confirmation message explaining what you did."
-        summary_response = self.client.chat.completions.create(
-            model=self.model_name, messages=[{"role": "system", "content": summary_prompt}, {"role": "user", "content": f"Query: {query}, Tool: {function_name}, Args: {json.dumps(function_args)}"}]
+        if not summary_text:
+        # If summary_text is empty, it means we used a tool like 'add_log_entry' or 'new_search'
+        # that requires a generic confirmation message.
+         summary_prompt = "You are an AI Football Scout. Your tool call was successful. Based on the original query and the tool called, write a brief, friendly confirmation message explaining what you did."
+         summary_response = self.client.chat.completions.create(
+         model=self.model_name, messages=[{"role": "system", "content": summary_prompt}, {"role": "user", "content": f"Query: {query}, Tool: {function_name}, Args: {json.dumps(function_args)}"}]
         )
         summary_text = summary_response.choices[0].message.content
         
-        display_df = None
-
-        if result_df is not None:
+        # --- SPRINT 2 MODIFICATION: Final Response Handling ---
+        # If a player search was performed, use the existing logic to create a formatted display DataFrame.
+        # Otherwise, the display_df (containing the updated logbook) will be used.
+        if result_df is not None and function_name != 'add_log_entry':
             base_cols = ['full_name', 'age', 'primary_position']
             fit_score_cols = sorted([c for c in result_df.columns if 'fit_score' in c])
-            
-            key_metric_cols = []
-            if archetype_for_this_turn and archetype_for_this_turn in ARCHETYPES:
-                key_metric_cols = list(ARCHETYPES[archetype_for_this_turn]['key_metrics'].keys())
-
-            used_cols = []
-            if sort_by_col := function_args.get('sort_by'): used_cols.append(sort_by_col)
-            if filters := function_args.get('filters'):
-                for f in filters: used_cols.append(f['column'])
-            
-            display_cols = base_cols + fit_score_cols + key_metric_cols + used_cols
-            final_display_cols = list(dict.fromkeys([col for col in display_cols if col in result_df.columns]))
-            
+            archetype_for_this_turn = active_archetype
+            if function_name == 'new_search': archetype_for_this_turn = function_args.get("archetype_name")
+            elif function_name == 'filter_and_sort': archetype_for_this_turn = function_args.get('add_archetype_as_column', active_archetype)
+            key_metric_cols = list(ARCHETYPES.get(archetype_for_this_turn, {}).get('key_metrics', {}).keys())
+            used_cols = [col for col in [function_args.get('sort_by')] + [f.get('column') for f in function_args.get('filters', [])] if col]
+            final_display_cols = list(dict.fromkeys([col for col in base_cols + fit_score_cols + key_metric_cols + used_cols if col in result_df.columns]))
             final_display_df = result_df[final_display_cols].copy()
             for col in fit_score_cols:
                 final_display_df[col] = final_display_df[col].round(3)
             display_df = final_display_df
-            
-            # --------------------- CHANGE 1.1: REMOVAL START ---------------------
-            # The entire "INSIGHT ENGINE INTEGRATION (3/3) - INVOCATION" block has been removed from here.
-            # The logic that automatically generated an analyst_note for the top player is gone.
-            # ---------------------- CHANGE 1.1: REMOVAL END ----------------------
         
         return {
             "summary_text": summary_text, 
             "dataframe": display_df, 
             "plotly_fig": plotly_fig, 
-            "raw_dataframe": result_df,
+            "raw_dataframe": result_df if function_name != 'add_log_entry' else None,
             "tool_call": {"name": function_name, "arguments": function_args},
-            # The "analyst_note" key has been removed from this dictionary
         }
 
     # ---------------------- CHANGE 1.2: ADDITION START ---------------------
