@@ -205,11 +205,11 @@ class WebUI:
                     ]
 
                     agent_response = self.agent.process_query(
-                        query=prompt,
-                        chat_history=chat_history_for_agent,
-                        full_df=st.session_state.full_df,
-                        last_result_df=last_result_df,
-                        active_archetype=st.session_state.active_archetype
+                     query=prompt,
+                     chat_history=chat_history_for_agent,
+                     full_df=st.session_state.full_df,
+                     last_result_df=last_result_df,
+                     active_archetype=st.session_state.active_archetype
                     )
 
                     tool_call = agent_response.get("tool_call")
