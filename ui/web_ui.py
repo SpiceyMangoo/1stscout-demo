@@ -160,7 +160,7 @@ class WebUI:
                     # Use the file's unique ID to prevent reprocessing the same file on reruns
                     if (logbook_file.name, logbook_file.size) not in st.session_state.get('processed_logbooks', set()):
                         with st.spinner(f"Loading logbook '{logbook_file.name}'..."):
-                            load_logbook(logbook_file) # This function will add it to st.session_state['logbooks']
+                            st.session_state['logbooks'] = load_logbook(st.session_state['logbooks'], logbook_file) # This function will add it to st.session_state['logbooks']
                         
                         # Add the ID to a set of processed files
                         if 'processed_logbooks' not in st.session_state:
